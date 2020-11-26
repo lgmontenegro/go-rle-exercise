@@ -12,13 +12,13 @@ type Message struct {
 }
 
 type toDecode struct {
-	multiplier int
+	multiplier int32
 	message    string
 }
 
 func main() {
 	msg := Message{
-		Phrase: "AAAAAAAAAA",
+		Phrase: "AAAAAAAAAABBB",
 	}
 
 	fmt.Println(msg)
@@ -29,23 +29,22 @@ func main() {
 }
 
 func (m *Message) decode() string {
-	var multiplier string
+	var multiplier int32
 	decodeCollection := make([]toDecode, 0)
 
 	for _, char := range m.EncodedPhrase {
 		if char >= 48 && char <= 57 {
-			multiplier = multiplier + string(char)
+			realIntChar := char - 48
+			multiplier = (multiplier * 10) + realIntChar
 			continue
 		}
-
-		x, _ := strconv.Atoi(multiplier)
-		decodeCollection = append(decodeCollection, toDecode{x, string(char)})
-		multiplier = "0"
+		decodeCollection = append(decodeCollection, toDecode{multiplier, string(char)})
+		multiplier = 0
 	}
 
 	m.Phrase = "#"
 	for _, decodeInstruction := range decodeCollection {
-		for i := int(0); i < decodeInstruction.multiplier; i++ {
+		for i := int32(0); i < decodeInstruction.multiplier; i++ {
 			m.Phrase += decodeInstruction.message
 		}
 	}
