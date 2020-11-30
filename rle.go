@@ -1,19 +1,18 @@
 package main
 
+// implementing RLE algoritm
+//https://en.wikipedia.org/wiki/Run-length_encoding
+
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // Message portugal, caralho!
 type Message struct {
 	Phrase        string
 	EncodedPhrase string
-}
-
-type toDecode struct {
-	multiplier int32
-	message    string
 }
 
 func main() {
@@ -25,12 +24,16 @@ func main() {
 	fmt.Println(msg.encode())
 
 	fmt.Println(msg)
-	fmt.Println(msg.decode())
+	decodedMsg, err := msg.decode()
+	if err != nil {
+		println(err)
+	}
+	fmt.Println(decodedMsg)
 }
 
-func (m *Message) decode() string {
+func (m *Message) decode() (string, error) {
 	var multiplier int32
-	decodeCollection := make([]toDecode, 0)
+	var decodedString strings.Builder
 
 	for _, char := range m.EncodedPhrase {
 		if char >= 48 && char <= 57 {
@@ -38,18 +41,18 @@ func (m *Message) decode() string {
 			multiplier = (multiplier * 10) + realIntChar
 			continue
 		}
-		decodeCollection = append(decodeCollection, toDecode{multiplier, string(char)})
+
+		for i := multiplier; i >= 1; i-- {
+			_, err := decodedString.WriteRune(char)
+			if err != nil {
+				return "", err
+			}
+		}
 		multiplier = 0
 	}
 
-	m.Phrase = "#"
-	for _, decodeInstruction := range decodeCollection {
-		for i := int32(0); i < decodeInstruction.multiplier; i++ {
-			m.Phrase += decodeInstruction.message
-		}
-	}
-
-	return m.Phrase
+	m.Phrase = decodedString.String()
+	return m.Phrase, nil
 }
 
 func (m *Message) encode() string {
